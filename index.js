@@ -27,7 +27,6 @@ const {
 
 const qrcode = require("qrcode-terminal");
 const { createClient } = require("@supabase/supabase-js");
-const fs = require("fs");
 const crypto = require("crypto");
 
 // ==================================================
