@@ -52,8 +52,6 @@ console.log(
 // WHATSAPP CLIENT
 // ==================================================
 
-const path = require("path");
-
 const authPath = path.join("/tmp", ".wwebjs_auth");
 
 fs.mkdirSync(authPath, {
