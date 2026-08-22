@@ -1,18 +1,96 @@
 require("dotenv").config();
 const http = require("http");
+const QRCode = require("qrcode");
 
 const PORT = process.env.PORT || 3000;
 
+let currentQR = null;
+let whatsappStatus = "Starting...";
+
 const server = http.createServer((req, res) => {
   res.writeHead(200, {
-    "Content-Type": "text/plain",
+    "Content-Type": "text/html; charset=utf-8",
   });
 
-  res.end("NV CELL WhatsApp Bot is running");
+  if (currentQR) {
+    res.end(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>NV CELL WhatsApp</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #111;
+            color: white;
+            padding: 30px;
+          }
+
+          img {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            width: 350px;
+            max-width: 90%;
+          }
+
+          h1 {
+            color: #25D366;
+          }
+        </style>
+      </head>
+
+      <body>
+        <h1>📱 NV CELL WhatsApp</h1>
+        <h2>Scan QR Code</h2>
+
+        <p>
+          WhatsApp → Perangkat tertaut → Tautkan perangkat
+        </p>
+
+        <img src="${currentQR}">
+
+        <p>QR akan diperbarui otomatis.</p>
+
+        <script>
+          setTimeout(() => location.reload(), 5000);
+        </script>
+      </body>
+      </html>
+    `);
+  } else {
+    res.end(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>NV CELL WhatsApp</title>
+      </head>
+
+      <body style="
+        font-family: Arial;
+        text-align: center;
+        background: #111;
+        color: white;
+        padding: 50px;
+      ">
+        <h1>🟢 NV CELL WhatsApp</h1>
+        <h2>${whatsappStatus}</h2>
+        <p>Menunggu QR WhatsApp...</p>
+
+        <script>
+          setTimeout(() => location.reload(), 5000);
+        </script>
+      </body>
+      </html>
+    `);
+  }
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`🌐 Health check server berjalan di port ${PORT}`);
+  console.log(`🌐 QR WEB SERVER berjalan di port ${PORT}`);
 });
 const {
   Client,
@@ -59,15 +137,20 @@ const client = new Client({
         ]
     }
 });
-client.on("qr", (qr) => {
-    console.log("📱 QR WHATSAPP TERSEDIA");
-    console.log(qr);
-});
 
 client.on("authenticated", () => {
     console.log("🔐 WHATSAPP AUTHENTICATED");
 });
+client.on("qr", async (qr) => {
+  console.log("📱 QR CODE BARU - BUKA URL RAILWAY UNTUK SCAN");
 
+  try {
+    currentQR = await QRCode.toDataURL(qr);
+    whatsappStatus = "Menunggu scan QR...";
+  } catch (err) {
+    console.error("❌ GAGAL MEMBUAT QR:", err);
+  }
+});
 client.on("ready", () => {
     console.log("✅ WHATSAPP CLIENT READY - BOT SIAP");
 });
