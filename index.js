@@ -172,34 +172,11 @@ const client = new Client({
   }
 });
 
-client.on("authenticated", () => {
-    console.log("🔐 WHATSAPP AUTHENTICATED");
-});
-client.on("qr", async (qr) => {
-  console.log("📱 QR CODE BARU - BUKA URL RAILWAY UNTUK SCAN");
-
-  try {
-    currentQR = await QRCode.toDataURL(qr);
-    whatsappStatus = "Menunggu scan QR...";
-  } catch (err) {
-    console.error("❌ GAGAL MEMBUAT QR:", err);
-  }
-});
-client.on("ready", () => {
-    console.log("✅ WHATSAPP CLIENT READY - BOT SIAP");
-});
-
-client.on("auth_failure", (msg) => {
-    console.error("❌ WHATSAPP AUTH FAILURE:", msg);
-});
-
 client.on("disconnected", (reason) => {
     console.log("🔴 WHATSAPP DISCONNECTED:", reason);
 });
 
-client.on("change_state", (state) => {
-    console.log("🔄 WHATSAPP STATE:", state);
-});
+
 // ==================================================
 // FILE DATA
 // ==================================================
@@ -604,7 +581,7 @@ function getSession(message) {
 // WHATSAPP STATUS
 // ==================================================
 
-let whatsappStatus = "Starting...";
+
 let reconnecting = false;
 let shuttingDown = false;
 let transactionMonitorStarted = false;
@@ -712,6 +689,7 @@ client.on("ready", () => {
     10 * 1000
   );
 }
+});
 // ==================================================
 // DISCONNECTED
 // ==================================================
@@ -1769,10 +1747,11 @@ client.on(
           customerOrderIds.length > 0
         ) {
           const latestOrderId =
-            customerOrderIds[
-              customerOrderIds.length - 1
-            ];
-
+  customerOrderIds.sort(
+    (a, b) =>
+      (orders[b].createdAt || 0) -
+      (orders[a].createdAt || 0)
+  )[0];
           orders[
             latestOrderId
           ].status =
@@ -1983,17 +1962,25 @@ async function checkCompletedTransactions() {
       // CEK SUDAH DIPROSES
       // ==================================================
 
-      if (
-        notifiedTransactions[
-          transactionId
-        ]
-      ) {
-        console.log(
-          "⏭️ Transaksi sudah pernah diproses."
-        );
+      const processedTransaction =
+  notifiedTransactions[transactionId];
 
-        continue;
-      }
+if (processedTransaction) {
+  console.log(
+    "⏭️ Transaksi sudah pernah diproses/diproses."
+  );
+
+  continue;
+}
+      notifiedTransactions[transactionId] = {
+  processing: true,
+  startedAt: Date.now(),
+};
+
+saveJson(
+  notifiedFile,
+  notifiedTransactions
+);
 
       // ==================================================
       // NOMOR TUJUAN
@@ -2248,21 +2235,22 @@ async function checkCompletedTransactions() {
         // ==================================================
 
         notifiedTransactions[
-          transactionId
-        ] = {
-          sentAt:
-            Date.now(),
+  transactionId
+] = {
+  processing: false,
 
-          whatsapp:
-            whatsappChatId,
+  sentAt:
+    Date.now(),
 
-          customerId:
-            customerId,
+  whatsapp:
+    whatsappChatId,
 
-          pointsAdded:
-            1,
-        };
+  customerId:
+    customerId,
 
+  pointsAdded:
+    1,
+};
         saveJson(
           notifiedFile,
           notifiedTransactions
