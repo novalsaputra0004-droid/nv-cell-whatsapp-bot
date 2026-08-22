@@ -1,0 +1,12 @@
+node_modules/
+.wwebjs_auth/
+.wwebjs_cache/
+
+.env
+
+customers.json
+orders.json
+points.json
+rewards.json
+cooldown.json
+notified.json
