@@ -51,7 +51,13 @@ console.log(
 const client = new Client({
     authStrategy: new LocalAuth({
         dataPath: "/tmp/.wwebjs_auth"
-    })
+    }),
+    puppeteer: {
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox"
+        ]
+    }
 });
 // ==================================================
 // FILE DATA
