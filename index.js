@@ -59,6 +59,30 @@ const client = new Client({
         ]
     }
 });
+client.on("qr", (qr) => {
+    console.log("📱 QR WHATSAPP TERSEDIA");
+    console.log(qr);
+});
+
+client.on("authenticated", () => {
+    console.log("🔐 WHATSAPP AUTHENTICATED");
+});
+
+client.on("ready", () => {
+    console.log("✅ WHATSAPP CLIENT READY - BOT SIAP");
+});
+
+client.on("auth_failure", (msg) => {
+    console.error("❌ WHATSAPP AUTH FAILURE:", msg);
+});
+
+client.on("disconnected", (reason) => {
+    console.log("🔴 WHATSAPP DISCONNECTED:", reason);
+});
+
+client.on("change_state", (state) => {
+    console.log("🔄 WHATSAPP STATE:", state);
+});
 // ==================================================
 // FILE DATA
 // ==================================================
