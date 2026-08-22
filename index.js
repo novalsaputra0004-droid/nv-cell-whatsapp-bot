@@ -8,6 +8,31 @@ let currentQR = null;
 let whatsappStatus = "Starting...";
 
 const server = http.createServer((req, res) => {
+    if (req.url === "/health") {
+    const isReady =
+      whatsappStatus === "READY";
+
+    res.writeHead(
+      isReady ? 200 : 503,
+      {
+        "Content-Type":
+          "application/json; charset=utf-8",
+      }
+    );
+
+    return res.end(
+      JSON.stringify({
+        status:
+          isReady ? "ok" : "starting",
+        whatsapp:
+          whatsappStatus,
+        uptime:
+          process.uptime(),
+        timestamp:
+          new Date().toISOString(),
+      })
+    );
+  }
   res.writeHead(200, {
     "Content-Type": "text/html; charset=utf-8",
   });
@@ -576,21 +601,37 @@ function getSession(message) {
 }
 
 // ==================================================
+// WHATSAPP STATUS
+// ==================================================
+
+let whatsappStatus = "Starting...";
+let reconnecting = false;
+let shuttingDown = false;
+let transactionMonitorStarted = false;
+
+// ==================================================
 // QR
 // ==================================================
 
-client.on("qr", (qr) => {
+client.on("qr", async (qr) => {
+  console.log("");
+  console.log("📱 QR CODE BARU - BUKA URL RAILWAY UNTUK SCAN");
   console.log("");
 
-  console.log(
-    "📱 SCAN QR CODE INI DENGAN WHATSAPP"
-  );
+  try {
+    currentQR = await QRCode.toDataURL(qr);
 
-  console.log("");
+    whatsappStatus = "Menunggu scan QR...";
 
-  qrcode.generate(qr, {
-    small: true,
-  });
+    console.log("✅ QR WEB berhasil dibuat.");
+  } catch (error) {
+    console.error(
+      "❌ GAGAL MEMBUAT QR:",
+      error.message
+    );
+
+    whatsappStatus = "QR Error";
+  }
 });
 
 // ==================================================
@@ -599,8 +640,10 @@ client.on("qr", (qr) => {
 
 client.on("authenticated", () => {
   console.log(
-    "🔐 WhatsApp berhasil authenticated."
+    "🔐 WHATSAPP AUTHENTICATED"
   );
+
+  whatsappStatus = "Authenticated";
 });
 
 // ==================================================
@@ -608,21 +651,25 @@ client.on("authenticated", () => {
 // ==================================================
 
 client.on("auth_failure", (message) => {
-  console.log(
-    "❌ Authentication gagal:",
+  console.error(
+    "❌ WHATSAPP AUTH FAILURE:",
     message
   );
+
+  whatsappStatus = "Auth Failure";
 });
 
 // ==================================================
-// DISCONNECTED
+// CHANGE STATE
 // ==================================================
 
-client.on("disconnected", (reason) => {
+client.on("change_state", (state) => {
   console.log(
-    "⚠️ WhatsApp terputus:",
-    reason
+    "🔄 WHATSAPP STATE:",
+    state
   );
+
+  whatsappStatus = String(state);
 });
 
 // ==================================================
@@ -631,23 +678,31 @@ client.on("disconnected", (reason) => {
 
 client.on("ready", () => {
   console.log("");
-
   console.log(
     "======================================"
   );
-
   console.log(
     "✅ BOT WHATSAPP BERHASIL TERHUBUNG"
   );
-
   console.log(
     "======================================"
   );
-
   console.log("");
+
+  whatsappStatus = "READY";
+
+  // QR sudah tidak diperlukan
+  currentQR = null;
 
   console.log(
     "🔄 Monitor transaksi aktif."
+  );
+
+ if (!transactionMonitorStarted) {
+  transactionMonitorStarted = true;
+
+  console.log(
+    "🔄 Monitor transaksi dimulai."
   );
 
   checkCompletedTransactions();
@@ -656,6 +711,77 @@ client.on("ready", () => {
     checkCompletedTransactions,
     10 * 1000
   );
+}
+// ==================================================
+// DISCONNECTED
+// ==================================================
+
+client.on("disconnected", (reason) => {
+  console.log("");
+  console.log(
+    "======================================"
+  );
+  console.log(
+    "🔴 WHATSAPP DISCONNECTED"
+  );
+  console.log(
+    "Alasan:",
+    reason
+  );
+  console.log(
+    "======================================"
+  );
+
+  whatsappStatus =
+    `Disconnected: ${reason}`;
+
+  if (shuttingDown) {
+    console.log(
+      "🛑 Shutdown sedang berjalan."
+    );
+
+    return;
+  }
+
+  if (reconnecting) {
+    console.log(
+      "⏳ Reconnect sudah sedang berjalan."
+    );
+
+    return;
+  }
+
+  reconnecting = true;
+
+  console.log(
+    "🔄 Reconnect akan dicoba dalam 10 detik..."
+  );
+
+  setTimeout(async () => {
+    try {
+      if (shuttingDown) {
+        return;
+      }
+
+      console.log(
+        "🔄 MENCOBA RECONNECT WHATSAPP..."
+      );
+
+      await client.initialize();
+
+      console.log(
+        "✅ Initialize reconnect berhasil."
+      );
+
+    } catch (error) {
+      console.error(
+        "❌ RECONNECT GAGAL:",
+        error.message
+      );
+    } finally {
+      reconnecting = false;
+    }
+  }, 10000);
 });
 
 // ==================================================
@@ -2271,3 +2397,62 @@ server.listen(PORT, "0.0.0.0", () => {
   );
 });
 startBot();
+// ==================================================
+// GRACEFUL SHUTDOWN
+// ==================================================
+
+async function shutdown(signal) {
+  if (shuttingDown) {
+    return;
+  }
+
+  shuttingDown = true;
+
+  console.log("");
+  console.log(
+    `🛑 MENERIMA SIGNAL: ${signal}`
+  );
+
+  console.log(
+    "🛑 Menghentikan WhatsApp client..."
+  );
+
+  try {
+    await client.destroy();
+
+    console.log(
+      "✅ WhatsApp client dihentikan."
+    );
+  } catch (error) {
+    console.error(
+      "❌ Gagal menghentikan WhatsApp:",
+      error.message
+    );
+  }
+
+  server.close(() => {
+    console.log(
+      "✅ HTTP server dihentikan."
+    );
+
+    process.exit(0);
+  });
+
+  setTimeout(() => {
+    console.log(
+      "⚠️ Forced shutdown."
+    );
+
+    process.exit(0);
+  }, 10000);
+}
+
+process.on(
+  "SIGTERM",
+  () => shutdown("SIGTERM")
+);
+
+process.on(
+  "SIGINT",
+  () => shutdown("SIGINT")
+);
