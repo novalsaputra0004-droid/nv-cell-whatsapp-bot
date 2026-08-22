@@ -1,5 +1,8 @@
 require("dotenv").config();
+
 const http = require("http");
+const fs = require("fs");
+const path = require("path");
 
 const PORT = process.env.PORT || 3000;
 
@@ -12,9 +15,10 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`🌐 Health check server berjalan di port ${PORT}`);
+  console.log(
+    `🌐 Health check server berjalan di port ${PORT}`
+  );
 });
-
 const {
   Client,
   LocalAuth,
@@ -51,9 +55,15 @@ console.log(
 
 const path = require("path");
 
+const authPath = path.join("/tmp", ".wwebjs_auth");
+
+fs.mkdirSync(authPath, {
+  recursive: true,
+});
+
 const client = new Client({
   authStrategy: new LocalAuth({
-    dataPath: path.join(process.cwd(), ".wwebjs_auth"),
+    dataPath: authPath,
   }),
 });
 
