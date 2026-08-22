@@ -35,9 +35,10 @@ console.log(
 // ==================================================
 
 const client = new Client({
-  authStrategy: new LocalAuth(),
+    authStrategy: new LocalAuth({
+        dataPath: "/tmp/.wwebjs_auth"
+    })
 });
-
 // ==================================================
 // FILE DATA
 // ==================================================
