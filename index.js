@@ -50,7 +50,7 @@ console.log(
 
 const client = new Client({
     authStrategy: new LocalAuth({
-        dataPath: "/tmp/.wwebjs_auth"
+        dataPath: "/app/data/.wwebjs_auth"
     }),
     puppeteer: {
         args: [
