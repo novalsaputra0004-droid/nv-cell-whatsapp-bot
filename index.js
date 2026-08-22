@@ -1,5 +1,19 @@
 require("dotenv").config();
+const http = require("http");
 
+const PORT = process.env.PORT || 3000;
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, {
+    "Content-Type": "text/plain",
+  });
+
+  res.end("NV CELL WhatsApp Bot is running");
+});
+
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`🌐 Health check server berjalan di port ${PORT}`);
+});
 const {
   Client,
   LocalAuth,
