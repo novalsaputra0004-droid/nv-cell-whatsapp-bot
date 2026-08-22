@@ -123,16 +123,28 @@ console.log(
 // WHATSAPP CLIENT
 // ==================================================
 
+console.log("📦 VOLUME MOUNT:", process.env.RAILWAY_VOLUME_MOUNT_PATH);
+console.log(
+  "📁 AUTH PATH:",
+  "/app/data/.wwebjs_auth"
+);
+console.log(
+  "📁 AUTH PARENT EXISTS:",
+  fs.existsSync("/app/data")
+); 
 const client = new Client({
-    authStrategy: new LocalAuth({
-        dataPath: "/app/data/.wwebjs_auth"
-    }),
-    puppeteer: {
-        args: [
-            "--no-sandbox",
-            "--disable-setuid-sandbox"
-        ]
-    }
+  authStrategy: new LocalAuth({
+    dataPath: "/app/data/.wwebjs_auth",
+    clientId: "nv-cell"
+  }),
+
+  puppeteer: {
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage"
+    ]
+  }
 });
 
 client.on("authenticated", () => {
