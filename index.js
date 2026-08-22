@@ -2120,8 +2120,10 @@ async function startBot() {
   console.log(
     "🚀 Menjalankan WhatsApp Bot..."
   );
+  console.log("🔥 AUTH DATAPATH:", client.authStrategy.dataPath);
+console.log("🔥 CURRENT DIR:", process.cwd());
 
-  client.initialize();
+await client.initialize();
 }
 
 startBot();
