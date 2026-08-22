@@ -49,8 +49,12 @@ console.log(
 // WHATSAPP CLIENT
 // ==================================================
 
+const path = require("path");
+
 const client = new Client({
-  authStrategy: new LocalAuth(),
+  authStrategy: new LocalAuth({
+    dataPath: path.join(process.cwd(), ".wwebjs_auth"),
+  }),
 });
 
 // ==================================================
