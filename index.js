@@ -1,24 +1,5 @@
 require("dotenv").config();
 
-const http = require("http");
-const fs = require("fs");
-const path = require("path");
-
-const PORT = process.env.PORT || 3000;
-
-const server = http.createServer((req, res) => {
-  res.writeHead(200, {
-    "Content-Type": "text/plain",
-  });
-
-  res.end("NV CELL WhatsApp Bot is running");
-});
-
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(
-    `🌐 Health check server berjalan di port ${PORT}`
-  );
-});
 const {
   Client,
   LocalAuth,
@@ -27,6 +8,7 @@ const {
 
 const qrcode = require("qrcode-terminal");
 const { createClient } = require("@supabase/supabase-js");
+const fs = require("fs");
 const crypto = require("crypto");
 
 // ==================================================
@@ -52,24 +34,8 @@ console.log(
 // WHATSAPP CLIENT
 // ==================================================
 
-const authPath = path.join("/tmp", ".wwebjs_auth");
-
-fs.mkdirSync(authPath, {
-  recursive: true,
-});
-
 const client = new Client({
-  authStrategy: new LocalAuth({
-    dataPath: authPath,
-  }),
-  puppeteer: {
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-    headless: true,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-    ],
-  },
+  authStrategy: new LocalAuth(),
 });
 
 // ==================================================
@@ -210,38 +176,15 @@ function getCustomerKey(phone) {
 }
 
 // ==================================================
-// GENERATE REWARD CODE
-// ==================================================
-
-function generateRewardCode() {
-  const chars =
-    "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
-  let code = "NV-";
-
-  for (let i = 0; i < 8; i++) {
-    code += chars.charAt(
-      Math.floor(
-        Math.random() * chars.length
-      )
-    );
-  }
-
-  return code;
-}
-
-// ==================================================
 // HASH PASSWORD
 // ==================================================
 
 function hashPassword(password) {
-  const salt =
-    crypto.randomBytes(16).toString("hex");
+  const salt = crypto.randomBytes(16).toString("hex");
 
-  const hash =
-    crypto
-      .scryptSync(password, salt, 64)
-      .toString("hex");
+  const hash = crypto
+    .scryptSync(password, salt, 64)
+    .toString("hex");
 
   return `${salt}:${hash}`;
 }
@@ -250,17 +193,13 @@ function hashPassword(password) {
 // VERIFY PASSWORD
 // ==================================================
 
-function verifyPassword(
-  password,
-  storedPassword
-) {
+function verifyPassword(password, storedPassword) {
   try {
     if (!storedPassword) {
       return false;
     }
 
-    const parts =
-      storedPassword.split(":");
+    const parts = storedPassword.split(":");
 
     if (parts.length !== 2) {
       return false;
@@ -269,10 +208,9 @@ function verifyPassword(
     const salt = parts[0];
     const originalHash = parts[1];
 
-    const hash =
-      crypto
-        .scryptSync(password, salt, 64)
-        .toString("hex");
+    const hash = crypto
+      .scryptSync(password, salt, 64)
+      .toString("hex");
 
     return crypto.timingSafeEqual(
       Buffer.from(hash, "hex"),
@@ -299,8 +237,7 @@ function normalizeCustomerId(id) {
 // ==================================================
 
 function findCustomer(customerId) {
-  const id =
-    normalizeCustomerId(customerId);
+  const id = normalizeCustomerId(customerId);
 
   if (!id) {
     return null;
@@ -314,23 +251,18 @@ function findCustomer(customerId) {
 // ==================================================
 
 function findCustomerByPhone(phone) {
-  const normalized =
-    normalizePhone(phone);
+  const normalized = normalizePhone(phone);
 
   if (!normalized) {
     return null;
   }
 
-  for (
-    const customerId of Object.keys(customers)
-  ) {
-    const customer =
-      customers[customerId];
+  for (const customerId of Object.keys(customers)) {
+    const customer = customers[customerId];
 
     if (
       customer &&
-      normalizePhone(customer.phone) ===
-        normalized
+      normalizePhone(customer.phone) === normalized
     ) {
       return {
         id: customerId,
@@ -351,11 +283,8 @@ function findCustomerByChatId(chatId) {
     return null;
   }
 
-  for (
-    const customerId of Object.keys(customers)
-  ) {
-    const customer =
-      customers[customerId];
+  for (const customerId of Object.keys(customers)) {
+    const customer = customers[customerId];
 
     if (
       customer &&
@@ -375,20 +304,15 @@ function findCustomerByChatId(chatId) {
 // LOGOUT AKUN LAMA DARI WHATSAPP
 // ==================================================
 
-function logoutAllAccountsFromChatId(
-  chatId
-) {
+function logoutAllAccountsFromChatId(chatId) {
   if (!chatId) {
     return [];
   }
 
   const loggedOutAccounts = [];
 
-  for (
-    const customerId of Object.keys(customers)
-  ) {
-    const customer =
-      customers[customerId];
+  for (const customerId of Object.keys(customers)) {
+    const customer = customers[customerId];
 
     if (
       customer &&
@@ -396,12 +320,9 @@ function logoutAllAccountsFromChatId(
     ) {
       customer.whatsappChatId = null;
 
-      customers[customerId] =
-        customer;
+      customers[customerId] = customer;
 
-      loggedOutAccounts.push(
-        customerId
-      );
+      loggedOutAccounts.push(customerId);
 
       console.log(
         `🔓 Akun ${customerId} otomatis logout dari WhatsApp ${chatId}`
@@ -409,13 +330,8 @@ function logoutAllAccountsFromChatId(
     }
   }
 
-  if (
-    loggedOutAccounts.length > 0
-  ) {
-    saveJson(
-      customersFile,
-      customers
-    );
+  if (loggedOutAccounts.length > 0) {
+    saveJson(customersFile, customers);
   }
 
   return loggedOutAccounts;
@@ -425,9 +341,7 @@ function logoutAllAccountsFromChatId(
 // DATA POIN CUSTOMER
 // ==================================================
 
-function ensureCustomerPointData(
-  customerId
-) {
+function ensureCustomerPointData(customerId) {
   if (!customerId) {
     return false;
   }
@@ -440,23 +354,17 @@ function ensureCustomerPointData(
   }
 
   if (
-    typeof customerPoints[
-      customerId
-    ].points !== "number"
+    typeof customerPoints[customerId].points !==
+    "number"
   ) {
-    customerPoints[
-      customerId
-    ].points = 0;
+    customerPoints[customerId].points = 0;
   }
 
   if (
-    typeof customerPoints[
-      customerId
-    ].transactions !== "number"
+    typeof customerPoints[customerId].transactions !==
+    "number"
   ) {
-    customerPoints[
-      customerId
-    ].transactions = 0;
+    customerPoints[customerId].transactions = 0;
   }
 
   return true;
@@ -475,8 +383,7 @@ function getChatId(message) {
 // ==================================================
 
 function startRegistration(message) {
-  const chatId =
-    getChatId(message);
+  const chatId = getChatId(message);
 
   if (!chatId) {
     return;
@@ -493,8 +400,7 @@ function startRegistration(message) {
 // ==================================================
 
 function startPointLogin(message) {
-  const chatId =
-    getChatId(message);
+  const chatId = getChatId(message);
 
   if (!chatId) {
     return;
@@ -511,8 +417,7 @@ function startPointLogin(message) {
 // ==================================================
 
 function clearSession(message) {
-  const chatId =
-    getChatId(message);
+  const chatId = getChatId(message);
 
   if (chatId) {
     delete customerSessions[chatId];
@@ -524,17 +429,13 @@ function clearSession(message) {
 // ==================================================
 
 function getSession(message) {
-  const chatId =
-    getChatId(message);
+  const chatId = getChatId(message);
 
   if (!chatId) {
     return null;
   }
 
-  return (
-    customerSessions[chatId] ||
-    null
-  );
+  return customerSessions[chatId] || null;
 }
 
 // ==================================================
@@ -569,29 +470,23 @@ client.on("authenticated", () => {
 // AUTH FAILURE
 // ==================================================
 
-client.on(
-  "auth_failure",
-  (message) => {
-    console.log(
-      "❌ Authentication gagal:",
-      message
-    );
-  }
-);
+client.on("auth_failure", (message) => {
+  console.log(
+    "❌ Authentication gagal:",
+    message
+  );
+});
 
 // ==================================================
 // DISCONNECTED
 // ==================================================
 
-client.on(
-  "disconnected",
-  (reason) => {
-    console.log(
-      "⚠️ WhatsApp terputus:",
-      reason
-    );
-  }
-);
+client.on("disconnected", (reason) => {
+  console.log(
+    "⚠️ WhatsApp terputus:",
+    reason
+  );
+});
 
 // ==================================================
 // READY
@@ -1331,43 +1226,51 @@ client.on(
         );
 
       if (redeemMatch) {
+        const redeemPoints =
+          Number(redeemMatch[1]);
 
-        // ==================================================
-        // CEK AKUN YANG LOGIN
-        // ==================================================
+        console.log(
+          `🎟️ Permintaan tukar ${redeemPoints} poin dari ${chatId}`
+        );
+
+        const reward =
+          REWARDS[redeemPoints];
+
+        if (!reward) {
+          await message.reply(
+            "❌ *REWARD TIDAK TERSEDIA*\n\n" +
+
+            "Reward yang tersedia:\n\n" +
+
+            "🎁 *TUKAR 5* → Diskon Rp1.000\n" +
+            "🎁 *TUKAR 10* → Diskon Rp2.500\n" +
+            "🎁 *TUKAR 20* → Diskon Rp5.000\n\n" +
+
+            "Silakan pilih salah satu."
+          );
+
+          return;
+        }
 
         const account =
           findCustomerByChatId(chatId);
 
         if (!account) {
           await message.reply(
-            "❌ *AKUN BELUM LOGIN*\n\n" +
+            "❌ *AKUN BELUM TERHUBUNG*\n\n" +
 
-            "Untuk menukar poin, WhatsApp ini harus terhubung dengan akun NV CELL.\n\n" +
+            "WhatsApp ini belum terhubung dengan akun NV CELL.\n\n" +
 
-            "👉 Ketik *LOGIN* untuk masuk ke akun kamu."
+            "Silakan ketik *LOGIN* jika kamu sudah memiliki akun.\n\n" +
+
+            "Atau ketik *DAFTAR* untuk membuat akun baru."
           );
 
           return;
         }
 
-        // ==================================================
-        // CUSTOMER ID
-        // ==================================================
-
         const customerId =
           account.id;
-
-        const customer =
-          account.data;
-
-        console.log(
-          `🎟️ Permintaan tukar poin dari: ${customerId}`
-        );
-
-        // ==================================================
-        // DATA POIN
-        // ==================================================
 
         ensureCustomerPointData(
           customerId
@@ -1380,248 +1283,104 @@ client.on(
             ].points
           ) || 0;
 
-        // ==================================================
-        // JUMLAH POIN
-        // ==================================================
-
-        const redeemPoints =
-          Number(
-            redeemMatch[1]
-          );
-
-        // ==================================================
-        // CEK REWARD
-        // ==================================================
-
-        const reward =
-          REWARDS[
-            redeemPoints
-          ];
-
-        if (!reward) {
-          await message.reply(
-            "❌ *REWARD TIDAK TERSEDIA*\n\n" +
-
-            "Reward yang tersedia:\n\n" +
-
-            "⭐ 5 poin → Diskon Rp1.000\n" +
-            "⭐ 10 poin → Diskon Rp2.500\n" +
-            "⭐ 20 poin → Diskon Rp5.000\n\n" +
-
-            "Contoh:\n" +
-            "👉 *TUKAR 5*"
-          );
-
-          return;
-        }
-
-        // ==================================================
-        // CEK POIN
-        // ==================================================
-
         if (
           currentPoints <
           redeemPoints
         ) {
           await message.reply(
-            "❌ *POIN BELUM CUKUP*\n\n" +
+            "❌ *POIN TIDAK CUKUP*\n\n" +
 
-            `⭐ Poin kamu: *${currentPoints} poin*\n` +
+            `⭐ Poin kamu saat ini: *${currentPoints} poin*\n` +
 
-            `🎁 Dibutuhkan: *${redeemPoints} poin*\n\n` +
+            `🎟️ Poin yang dibutuhkan: *${redeemPoints} poin*\n\n` +
 
-            `Masih kurang *${
-              redeemPoints -
-              currentPoints
-            } poin*.\n\n` +
+            `❗ Kamu masih kekurangan *${redeemPoints - currentPoints} poin*.\n\n` +
 
-            "🔥 Yuk transaksi lagi di NV CELL!"
+            "🎁 Ketik *REWARD* untuk melihat hadiah yang tersedia."
           );
 
           return;
         }
 
-        // ==================================================
-        // NOMOR CUSTOMER
-        // ==================================================
-
-        const customerPhone =
-          normalizePhone(
-            customer.phone
-          );
-
-        if (!customerPhone) {
-          await message.reply(
-            "❌ Nomor HP akun kamu tidak valid.\n\n" +
-            "Silakan hubungi admin NV CELL."
-          );
-
-          return;
-        }
-
-        // ==================================================
-        // GENERATE KODE REWARD
-        // ==================================================
-
-        let rewardCode = null;
-
-        let codeExists = true;
-
-        while (codeExists) {
-          const generatedCode =
-            generateRewardCode();
-
-          const {
-            data,
-            error,
-          } = await supabase
-            .from("rewards")
-            .select("id")
-            .eq(
-              "code",
-              generatedCode
-            )
-            .maybeSingle();
-
-          if (error) {
-            console.log(
-              "❌ Gagal mengecek kode reward:",
-              error.message
-            );
-
-            await message.reply(
-              "❌ *GAGAL MEMBUAT KODE REWARD*\n\n" +
-              "Silakan coba lagi beberapa saat."
-            );
-
-            return;
-          }
-
-          if (!data) {
-            rewardCode =
-              generatedCode;
-
-            codeExists = false;
-          }
-        }
-
-        console.log(
-          `🎟️ Kode reward dibuat: ${rewardCode}`
-        );
-
-        // ==================================================
-        // SIMPAN REWARD KE SUPABASE
-        // ==================================================
-
-        const {
-          data: rewardData,
-          error: rewardError,
-        } = await supabase
-          .from("rewards")
-          .insert({
-            customer_phone:
-              customerPhone,
-
-            reward_type:
-              redeemPoints,
-
-            discount:
-              reward.discount,
-
-            code:
-              rewardCode,
-
-            status:
-              "active",
-          })
-          .select()
-          .single();
-
-        if (rewardError) {
-          console.log(
-            "❌ Gagal menyimpan reward:",
-            rewardError.message
-          );
-
-          await message.reply(
-            "❌ *REWARD GAGAL DIBUAT*\n\n" +
-            "Poin kamu belum dikurangi.\n\n" +
-            "Silakan coba lagi."
-          );
-
-          return;
-        }
-
-        console.log(
-          "✅ Reward berhasil disimpan ke Supabase:",
-          rewardData
-        );
-
-        // ==================================================
-        // KURANGI POIN
-        // ==================================================
+        const remainingPoints =
+          currentPoints -
+          redeemPoints;
 
         customerPoints[
           customerId
-        ].points -=
-          redeemPoints;
+        ].points =
+          remainingPoints;
+
+        customerPoints[
+          customerId
+        ].lastRedeem =
+          Date.now();
 
         saveJson(
           pointsFile,
           customerPoints
         );
 
-        const remainingPoints =
-          customerPoints[
+        if (
+          !customerRewards[
             customerId
-          ].points;
+          ]
+        ) {
+          customerRewards[
+            customerId
+          ] = [];
+        }
 
-        console.log(
-          `⭐ Poin ${customerId} berkurang ${redeemPoints}.`
+        const rewardId =
+          crypto.randomUUID();
+
+        customerRewards[
+          customerId
+        ].push({
+          id: rewardId,
+
+          points:
+            redeemPoints,
+
+          discount:
+            reward.discount,
+
+          name:
+            reward.name,
+
+          redeemedAt:
+            Date.now(),
+
+          status:
+            "active",
+        });
+
+        saveJson(
+          rewardsFile,
+          customerRewards
         );
-
-        console.log(
-          `⭐ Sisa poin: ${remainingPoints}`
-        );
-
-        // ==================================================
-        // KIRIM KODE KE PELANGGAN
-        // ==================================================
 
         await message.reply(
           "🎉 *REWARD BERHASIL DITUKAR!*\n\n" +
 
-          `🎁 Hadiah: *${reward.name}*\n` +
+          `🆔 ID Pelanggan: *${customerId}*\n\n` +
 
-          `⭐ Poin digunakan: *${redeemPoints} poin*\n` +
+          `🎟️ Reward: *${reward.name}*\n\n` +
 
-          `⭐ Sisa poin: *${remainingPoints} poin*\n\n` +
+          `⭐ Poin digunakan: *${redeemPoints} poin*\n\n` +
 
-          "━━━━━━━━━━━━━━━━━━\n\n" +
+          `⭐ Sisa poin kamu: *${remainingPoints} poin*\n\n` +
 
-          "🎟️ *KODE REWARD KAMU*\n\n" +
+          "🎁 Reward kamu sudah tersimpan.\n\n" +
 
-          `🔐 *${rewardCode}*\n\n` +
+          "📌 Simpan pesan ini sebagai bukti penukaran reward.\n\n" +
 
-          `💰 Diskon: *Rp${Number(
-            reward.discount
-          ).toLocaleString(
-            "id-ID"
-          )}*\n\n` +
-
-          "━━━━━━━━━━━━━━━━━━\n\n" +
-
-          "🌐 Gunakan kode ini saat melakukan konfirmasi pembayaran di website NV CELL.\n\n" +
-
-          "⚠️ *Kode hanya dapat digunakan 1 kali.*\n\n" +
-
-          "📌 Simpan kode ini dengan baik.\n\n" +
-
-          "⭐ Ketik *POIN* untuk melihat sisa poin kamu."
+          "💡 Ketik *REWARD* untuk melihat daftar hadiah lagi.\n" +
+          "💡 Ketik *POIN* untuk melihat saldo poin."
         );
 
         console.log(
-          `🎟️ ${customerId} mendapatkan reward ${rewardCode}`
+          "🎉 REWARD BERHASIL DITUKAR"
         );
 
         return;
@@ -1860,7 +1619,7 @@ client.on(
         const remainingMinutes =
           Math.ceil(
             remaining /
-              (60 * 1000)
+            (60 * 1000)
           );
 
         console.log(
