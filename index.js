@@ -89,9 +89,6 @@ const server = http.createServer((req, res) => {
   }
 });
 
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`🌐 QR WEB SERVER berjalan di port ${PORT}`);
-});
 const {
   Client,
   LocalAuth,
@@ -2252,5 +2249,13 @@ console.log("🔥 CURRENT DIR:", process.cwd());
 
 await client.initialize();
 }
+// ==================================================
+// RAILWAY WEB SERVER
+// ==================================================
 
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(
+    `🌐 QR WEB SERVER berjalan di port ${PORT}`
+  );
+});
 startBot();
