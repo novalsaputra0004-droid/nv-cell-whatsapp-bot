@@ -123,7 +123,6 @@ const {
 const qrcode = require("qrcode-terminal");
 const { createClient } = require("@supabase/supabase-js");
 const fs = require("fs");
-const path = require("path");
 const crypto = require("crypto");
 
 // ==================================================
@@ -144,76 +143,23 @@ console.log(
   "SUPABASE_KEY:",
   process.env.SUPABASE_KEY ? "ADA" : "TIDAK ADA"
 );
-// ==================================================
-// RAILWAY PERSISTENT DATA
-// ==================================================
-
-console.log(
-  "📦 VOLUME MOUNT:",
-  process.env.RAILWAY_VOLUME_MOUNT_PATH
-);
-
-const DATA_DIR =
-  process.env.RAILWAY_VOLUME_MOUNT_PATH ||
-  path.join(process.cwd(), "data");
-
-console.log("======================================");
-console.log("💾 DATA STORAGE");
-console.log("📁 DATA_DIR:", DATA_DIR);
-console.log("======================================");
-
-// ==================================================
-// BUAT FOLDER DATA
-// ==================================================
-
-try {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, {
-      recursive: true,
-    });
-
-    console.log(
-      "📁 Folder data dibuat:",
-      DATA_DIR
-    );
-  } else {
-    console.log(
-      "📁 Folder data ditemukan:",
-      DATA_DIR
-    );
-  }
-} catch (error) {
-  console.error(
-    "❌ GAGAL MEMBUAT FOLDER DATA:",
-    error.message
-  );
-
-  process.exit(1);
-}
-
-// ==================================================
-// WHATSAPP AUTH SESSION
-// ==================================================
-
-const AUTH_DIR = path.join(
-  DATA_DIR,
-  ".wwebjs_auth"
-);
-
-console.log(
-  "🔐 AUTH DIR:",
-  AUTH_DIR
-);
 
 // ==================================================
 // WHATSAPP CLIENT
 // ==================================================
 
 console.log("📦 VOLUME MOUNT:", process.env.RAILWAY_VOLUME_MOUNT_PATH);
-
+console.log(
+  "📁 AUTH PATH:",
+  "/app/data/.wwebjs_auth"
+);
+console.log(
+  "📁 AUTH PARENT EXISTS:",
+  fs.existsSync("/app/data")
+); 
 const client = new Client({
   authStrategy: new LocalAuth({
-    dataPath: AUTH_DIR
+    dataPath: "/app/data/.wwebjs_auth",
     clientId: "nv-cell"
   }),
 
@@ -225,46 +171,6 @@ const client = new Client({
     ]
   }
 });
-client.on("message_create", (message) => {
-  console.log("🟡🟡🟡 MESSAGE_CREATE TERDETEKSI");
-  console.log("FROM:", message.from);
-  console.log("FROM ME:", message.fromMe);
-  console.log("BODY:", message.body);
-});
-client.on("loading_screen", (percent, message) => {
-  console.log(
-    `⏳ LOADING: ${percent}% - ${message}`
-  );
-});
-
-client.on("message", (message) => {
-  console.log("🔥🔥 MESSAGE MASUK");
-  console.log("FROM:", message.from);
-  console.log("BODY:", message.body);
-});
-
-client.on("message_create", (message) => {
-  console.log("🟡 MESSAGE_CREATE");
-  console.log("FROM:", message.from);
-  console.log("FROM ME:", message.fromMe);
-  console.log("BODY:", message.body);
-});
-
-client.on("ready", async () => {
-  console.log("🟢 CLIENT READY");
-
-  try {
-    console.log(
-      "🌐 WA WEB VERSION:",
-      await client.getWWebVersion()
-    );
-  } catch (error) {
-    console.log(
-      "❌ GET WA VERSION ERROR:",
-      error.message
-    );
-  }
-});
 
 client.on("disconnected", (reason) => {
     console.log("🔴 WHATSAPP DISCONNECTED:", reason);
@@ -272,100 +178,16 @@ client.on("disconnected", (reason) => {
 
 
 // ==================================================
-// FILE DATABASE JSON
+// FILE DATA
 // ==================================================
 
-const cooldownFile =
-  path.join(
-    DATA_DIR,
-    "cooldown.json"
-  );
+const cooldownFile = "./cooldown.json";
+const ordersFile = "./orders.json";
+const notifiedFile = "./notified.json";
+const pointsFile = "./points.json";
+const rewardsFile = "./rewards.json";
+const customersFile = "./customers.json";
 
-const ordersFile =
-  path.join(
-    DATA_DIR,
-    "orders.json"
-  );
-
-const notifiedFile =
-  path.join(
-    DATA_DIR,
-    "notified.json"
-  );
-
-const pointsFile =
-  path.join(
-    DATA_DIR,
-    "points.json"
-  );
-
-const rewardsFile =
-  path.join(
-    DATA_DIR,
-    "rewards.json"
-  );
-
-const customersFile =
-  path.join(
-    DATA_DIR,
-    "customers.json"
-  );
-
-// ==================================================
-// DEBUG DATA PATH
-// ==================================================
-
-console.log(
-  "======================================"
-);
-
-console.log(
-  "💾 PERSISTENT DATA CONFIGURATION"
-);
-
-console.log(
-  "📁 DATA DIR:",
-  DATA_DIR
-);
-
-console.log(
-  "🔐 AUTH DIR:",
-  AUTH_DIR
-);
-
-console.log(
-  "👥 CUSTOMERS:",
-  customersFile
-);
-
-console.log(
-  "⭐ POINTS:",
-  pointsFile
-);
-
-console.log(
-  "🎁 REWARDS:",
-  rewardsFile
-);
-
-console.log(
-  "🛒 ORDERS:",
-  ordersFile
-);
-
-console.log(
-  "🔔 NOTIFIED:",
-  notifiedFile
-);
-
-console.log(
-  "⏱️ COOLDOWN:",
-  cooldownFile
-);
-
-console.log(
-  "======================================"
-);
 // ==================================================
 // COOLDOWN
 // ==================================================
@@ -448,46 +270,6 @@ let notifiedTransactions = loadJson(notifiedFile);
 let customerPoints = loadJson(pointsFile);
 let customerRewards = loadJson(rewardsFile);
 let customers = loadJson(customersFile);
-
-console.log("======================================");
-console.log("🔎 CEK CUSTOMERS.JSON");
-console.log("📁 DATA DIR:", DATA_DIR);
-console.log("📄 FILE:", customersFile);
-console.log("📄 FILE ADA:", fs.existsSync(customersFile));
-console.log("👥 JUMLAH CUSTOMER:", Object.keys(customers).length);
-console.log("🆔 CUSTOMER ID:", Object.keys(customers));
-console.log("======================================");
-
-console.log("======================================");
-console.log("📂 DATA JSON BERHASIL DILOAD");
-console.log("======================================");
-
-console.log(
-  "👥 Customers file:",
-  customersFile
-);
-
-console.log(
-  "👥 Jumlah customers:",
-  Object.keys(customers).length
-);
-
-console.log(
-  "⭐ Jumlah data poin:",
-  Object.keys(customerPoints).length
-);
-
-console.log(
-  "🎁 Jumlah data reward:",
-  Object.keys(customerRewards).length
-);
-
-console.log(
-  "🛒 Jumlah orders:",
-  Object.keys(orders).length
-);
-
-console.log("======================================");
 
 // ==================================================
 // SESSION PELANGGAN
@@ -987,15 +769,11 @@ client.on("disconnected", (reason) => {
 client.on(
   "message",
   async (message) => {
-
-    console.log("🔥🔥 MESSAGE EVENT MASUK!");
-    console.log("FROM:", message.from);
-    console.log("BODY:", message.body);
-
     try {
       const text = (
         message.body || ""
       ).trim();
+
       const lowerText =
         text.toLowerCase();
 
@@ -2590,50 +2368,8 @@ async function startBot() {
   console.log(
     "🚀 Menjalankan WhatsApp Bot..."
   );
-console.log(
-  "🔥 AUTH DATAPATH:",
-  client.authStrategy.dataPath
-);
-
-console.log(
-  "🔥 DATA DIR:",
-  DATA_DIR
-);
-
-console.log(
-  "🔥 CURRENT DIR:",
-  process.cwd()
-);
-
-console.log(
-  "🔥 RAILWAY VOLUME:",
-  process.env.RAILWAY_VOLUME_MOUNT_PATH || "TIDAK ADA"
-);
-
-console.log(
-  "🔥 DATA DIR EXISTS:",
-  fs.existsSync(DATA_DIR)
-);
-
-console.log(
-  "🔥 AUTH DIR EXISTS:",
-  fs.existsSync(AUTH_DIR)
-);
-
-console.log(
-  "🔥 CUSTOMERS FILE EXISTS:",
-  fs.existsSync(customersFile)
-);
-
-console.log(
-  "🔥 POINTS FILE EXISTS:",
-  fs.existsSync(pointsFile)
-);
-
-console.log(
-  "🔥 REWARDS FILE EXISTS:",
-  fs.existsSync(rewardsFile)
-);
+  console.log("🔥 AUTH DATAPATH:", client.authStrategy.dataPath);
+console.log("🔥 CURRENT DIR:", process.cwd());
 
 await client.initialize();
 }
