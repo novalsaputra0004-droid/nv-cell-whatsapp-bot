@@ -144,6 +144,59 @@ console.log(
   "SUPABASE_KEY:",
   process.env.SUPABASE_KEY ? "ADA" : "TIDAK ADA"
 );
+// ==================================================
+// RAILWAY PERSISTENT DATA
+// ==================================================
+
+// Railway Volume akan memberikan path melalui
+// RAILWAY_VOLUME_MOUNT_PATH.
+//
+// Jika dijalankan lokal dan variable tidak ada,
+// gunakan folder ./data sebagai fallback.
+
+console.log("======================================");
+console.log("💾 DATA STORAGE");
+console.log("📁 DATA_DIR:", DATA_DIR);
+console.log("======================================");
+
+// ==================================================
+// BUAT FOLDER DATA
+// ==================================================
+
+try {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, {
+      recursive: true,
+    });
+
+    console.log(
+      "📁 Folder data dibuat:",
+      DATA_DIR
+    );
+  } else {
+    console.log(
+      "📁 Folder data ditemukan:",
+      DATA_DIR
+    );
+  }
+} catch (error) {
+  console.error(
+    "❌ GAGAL MEMBUAT FOLDER DATA:",
+    error.message
+  );
+
+  process.exit(1);
+}
+
+// ==================================================
+// WHATSAPP AUTH SESSION
+// ==================================================
+
+const AUTH_DIR =
+  path.join(
+    DATA_DIR,
+    ".wwebjs_auth"
+  );
 
 // ==================================================
 // WHATSAPP CLIENT
@@ -210,64 +263,6 @@ client.on("disconnected", (reason) => {
     console.log("🔴 WHATSAPP DISCONNECTED:", reason);
 });
 
-
-// ==================================================
-// RAILWAY PERSISTENT DATA
-// ==================================================
-
-// Railway Volume akan memberikan path melalui
-// RAILWAY_VOLUME_MOUNT_PATH.
-//
-// Jika dijalankan lokal dan variable tidak ada,
-// gunakan folder ./data sebagai fallback.
-
-const DATA_DIR =
-  process.env.RAILWAY_VOLUME_MOUNT_PATH ||
-  path.join(process.cwd(), "data");
-
-console.log("======================================");
-console.log("💾 DATA STORAGE");
-console.log("📁 DATA_DIR:", DATA_DIR);
-console.log("======================================");
-
-// ==================================================
-// BUAT FOLDER DATA
-// ==================================================
-
-try {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, {
-      recursive: true,
-    });
-
-    console.log(
-      "📁 Folder data dibuat:",
-      DATA_DIR
-    );
-  } else {
-    console.log(
-      "📁 Folder data ditemukan:",
-      DATA_DIR
-    );
-  }
-} catch (error) {
-  console.error(
-    "❌ GAGAL MEMBUAT FOLDER DATA:",
-    error.message
-  );
-
-  process.exit(1);
-}
-
-// ==================================================
-// WHATSAPP AUTH SESSION
-// ==================================================
-
-const AUTH_DIR =
-  path.join(
-    DATA_DIR,
-    ".wwebjs_auth"
-  );
 
 // ==================================================
 // FILE DATABASE JSON
