@@ -153,7 +153,7 @@ console.log("📦 VOLUME MOUNT:", process.env.RAILWAY_VOLUME_MOUNT_PATH);
 
 const client = new Client({
   authStrategy: new LocalAuth({
-    dataPath: "/app/data/.wwebjs_auth",
+    dataPath: path.join(DATA_DIR, ".wwebjs_auth"),
     clientId: "nv-cell"
   }),
 
@@ -224,6 +224,11 @@ client.on("disconnected", (reason) => {
 const DATA_DIR =
   process.env.RAILWAY_VOLUME_MOUNT_PATH ||
   path.join(process.cwd(), "data");
+
+console.log("======================================");
+console.log("💾 DATA STORAGE");
+console.log("📁 DATA_DIR:", DATA_DIR);
+console.log("======================================");
 
 // ==================================================
 // BUAT FOLDER DATA
@@ -441,6 +446,46 @@ let notifiedTransactions = loadJson(notifiedFile);
 let customerPoints = loadJson(pointsFile);
 let customerRewards = loadJson(rewardsFile);
 let customers = loadJson(customersFile);
+
+console.log("======================================");
+console.log("🔎 CEK CUSTOMERS.JSON");
+console.log("📁 DATA DIR:", DATA_DIR);
+console.log("📄 FILE:", customersFile);
+console.log("📄 FILE ADA:", fs.existsSync(customersFile));
+console.log("👥 JUMLAH CUSTOMER:", Object.keys(customers).length);
+console.log("🆔 CUSTOMER ID:", Object.keys(customers));
+console.log("======================================");
+
+console.log("======================================");
+console.log("📂 DATA JSON BERHASIL DILOAD");
+console.log("======================================");
+
+console.log(
+  "👥 Customers file:",
+  customersFile
+);
+
+console.log(
+  "👥 Jumlah customers:",
+  Object.keys(customers).length
+);
+
+console.log(
+  "⭐ Jumlah data poin:",
+  Object.keys(customerPoints).length
+);
+
+console.log(
+  "🎁 Jumlah data reward:",
+  Object.keys(customerRewards).length
+);
+
+console.log(
+  "🛒 Jumlah orders:",
+  Object.keys(orders).length
+);
+
+console.log("======================================");
 
 // ==================================================
 // SESSION PELANGGAN
