@@ -1682,12 +1682,14 @@ client.on(
         }
 
         const customerId =
-          account.id;
+  account.id;
 
-        ensureCustomerPointData(
-          customerId
-        );
+const customer =
+  account.data;
 
+ensureCustomerPointData(
+  customerId
+);
         const currentPoints =
           Number(
             customerPoints[
