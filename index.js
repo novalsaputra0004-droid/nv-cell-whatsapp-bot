@@ -171,6 +171,46 @@ const client = new Client({
     ]
   }
 });
+client.on("message_create", (message) => {
+  console.log("🟡🟡🟡 MESSAGE_CREATE TERDETEKSI");
+  console.log("FROM:", message.from);
+  console.log("FROM ME:", message.fromMe);
+  console.log("BODY:", message.body);
+});
+client.on("loading_screen", (percent, message) => {
+  console.log(
+    `⏳ LOADING: ${percent}% - ${message}`
+  );
+});
+
+client.on("message", (message) => {
+  console.log("🔥🔥 MESSAGE MASUK");
+  console.log("FROM:", message.from);
+  console.log("BODY:", message.body);
+});
+
+client.on("message_create", (message) => {
+  console.log("🟡 MESSAGE_CREATE");
+  console.log("FROM:", message.from);
+  console.log("FROM ME:", message.fromMe);
+  console.log("BODY:", message.body);
+});
+
+client.on("ready", async () => {
+  console.log("🟢 CLIENT READY");
+
+  try {
+    console.log(
+      "🌐 WA WEB VERSION:",
+      await client.getWWebVersion()
+    );
+  } catch (error) {
+    console.log(
+      "❌ GET WA VERSION ERROR:",
+      error.message
+    );
+  }
+});
 
 client.on("disconnected", (reason) => {
     console.log("🔴 WHATSAPP DISCONNECTED:", reason);
@@ -769,11 +809,15 @@ client.on("disconnected", (reason) => {
 client.on(
   "message",
   async (message) => {
+
+    console.log("🔥🔥 MESSAGE EVENT MASUK!");
+    console.log("FROM:", message.from);
+    console.log("BODY:", message.body);
+
     try {
       const text = (
         message.body || ""
       ).trim();
-
       const lowerText =
         text.toLowerCase();
 
