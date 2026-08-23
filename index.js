@@ -206,16 +206,6 @@ console.log(
 );
 
 // ==================================================
-// WHATSAPP AUTH SESSION
-// ==================================================
-
-const AUTH_DIR =
-  path.join(
-    DATA_DIR,
-    ".wwebjs_auth"
-  );
-
-// ==================================================
 // WHATSAPP CLIENT
 // ==================================================
 
@@ -223,7 +213,7 @@ console.log("📦 VOLUME MOUNT:", process.env.RAILWAY_VOLUME_MOUNT_PATH);
 
 const client = new Client({
   authStrategy: new LocalAuth({
-    dataPath: path.join(DATA_DIR, ".wwebjs_auth"),
+    dataPath: AUTH_DIR
     clientId: "nv-cell"
   }),
 
