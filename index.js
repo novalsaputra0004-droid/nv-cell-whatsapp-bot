@@ -928,7 +928,11 @@ client.on("disconnected", (reason) => {
 // ==================================================
 // PESAN MASUK
 // ==================================================
-
+client.on("message", (message) => {
+  console.log("🚨🚨🚨 TEST MESSAGE EVENT");
+  console.log("FROM:", message.from);
+  console.log("BODY:", message.body);
+});
 client.on(
   "message",
   async (message) => {
