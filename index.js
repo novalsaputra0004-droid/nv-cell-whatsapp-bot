@@ -1754,7 +1754,7 @@ client.on(
 const rewardId = crypto.randomUUID();
 
 const redeemCode =
-  "NVCELL-" +
+  "NV-" +
   crypto
     .randomBytes(4)
     .toString("hex")
@@ -1782,7 +1782,33 @@ customerRewards[
   status:
     "active",
 });
+// ==================================================
+// SIMPAN REWARD KE SUPABASE
+// ==================================================
 
+const { error: rewardError } = await supabase
+  .from("rewards")
+  .insert({
+    code: redeemCode,
+    customerId: customerId,
+    discount: reward.discount,
+    rewardName: reward.name,
+    pointsUsed: redeemPoints,
+    used: false,
+    createdAt: Date.now(),
+  });
+
+if (rewardError) {
+  console.error(
+    "❌ GAGAL SIMPAN REWARD KE SUPABASE:",
+    rewardError.message
+  );
+} else {
+  console.log(
+    "✅ REWARD BERHASIL DISIMPAN KE SUPABASE:",
+    redeemCode
+  );
+}
         saveJson(
           rewardsFile,
           customerRewards
