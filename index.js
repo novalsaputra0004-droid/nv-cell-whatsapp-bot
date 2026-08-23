@@ -1751,30 +1751,37 @@ client.on(
             customerId
           ] = [];
         }
+const rewardId = crypto.randomUUID();
 
-        const rewardId =
-          crypto.randomUUID();
+const redeemCode =
+  "NVCELL-" +
+  crypto
+    .randomBytes(4)
+    .toString("hex")
+    .toUpperCase();
 
-        customerRewards[
-          customerId
-        ].push({
-          id: rewardId,
+customerRewards[
+  customerId
+].push({
+  id: rewardId,
 
-          points:
-            redeemPoints,
+  code: redeemCode,
 
-          discount:
-            reward.discount,
+  points:
+    redeemPoints,
 
-          name:
-            reward.name,
+  discount:
+    reward.discount,
 
-          redeemedAt:
-            Date.now(),
+  name:
+    reward.name,
 
-          status:
-            "active",
-        });
+  redeemedAt:
+    Date.now(),
+
+  status:
+    "active",
+});
 
         saveJson(
           rewardsFile,
@@ -1791,6 +1798,8 @@ client.on(
           `⭐ Poin digunakan: *${redeemPoints} poin*\n\n` +
 
           `⭐ Sisa poin kamu: *${remainingPoints} poin*\n\n` +
+
+          `🎟️ Kode Redeem: *${redeemCode}*\n\n` +
 
           "🎁 Reward kamu sudah tersimpan.\n\n" +
 
