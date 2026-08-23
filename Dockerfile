@@ -33,5 +33,5 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
-
+RUN chmod +x /app/setpoin.js && ln -sf /app/setpoin.js /usr/local/bin/setpoin
 CMD ["node", "index.js"]
