@@ -1786,27 +1786,65 @@ customerRewards[
 // SIMPAN REWARD KE SUPABASE
 // ==================================================
 
-const { error: rewardError } = await supabase
-  .from("rewards")
-  .insert({
-    code: redeemCode,
-    customerId: customerId,
-    discount: reward.discount,
-    rewardName: reward.name,
-    pointsUsed: redeemPoints,
-    used: false,
-    createdAt: Date.now(),
-  });
+const customerPhone = normalizePhone(
+  customer.phone
+);
+
+console.log("💾 MENYIMPAN REWARD KE SUPABASE...");
+console.log("📱 CUSTOMER PHONE:", customerPhone);
+console.log("🎟️ REDEEM CODE:", redeemCode);
+console.log("🎁 REWARD TYPE:", redeemPoints);
+console.log("💰 DISCOUNT:", reward.discount);
+
+const { data: insertedReward, error: rewardError } =
+  await supabase
+    .from("rewards")
+    .insert({
+      customer_phone: customerPhone,
+      reward_type: redeemPoints,
+      discount: reward.discount,
+      code: redeemCode,
+      status: "active",
+      used_at: null,
+    })
+    .select()
+    .single();
 
 if (rewardError) {
   console.error(
-    "❌ GAGAL SIMPAN REWARD KE SUPABASE:",
+    "❌ GAGAL MENYIMPAN REWARD KE SUPABASE:"
+  );
+
+  console.error(
+    "MESSAGE:",
     rewardError.message
+  );
+
+  console.error(
+    "DETAIL:",
+    rewardError.details
+  );
+
+  console.error(
+    "HINT:",
+    rewardError.hint
+  );
+
+  console.error(
+    "CODE:",
+    rewardError.code
   );
 } else {
   console.log(
-    "✅ REWARD BERHASIL DISIMPAN KE SUPABASE:",
-    redeemCode
+    "✅ REWARD BERHASIL MASUK SUPABASE:"
+  );
+
+  console.log(
+    JSON.stringify(
+      insertedReward,
+      null,
+      2
+    )
   );
 }
         saveJson(
