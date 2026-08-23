@@ -165,12 +165,6 @@ const client = new Client({
     ]
   }
 });
-client.on("message_create", (message) => {
-  console.log("🟡🟡🟡 MESSAGE_CREATE TERDETEKSI");
-  console.log("FROM:", message.from);
-  console.log("FROM ME:", message.fromMe);
-  console.log("BODY:", message.body);
-});
 client.on("loading_screen", (percent, message) => {
   console.log(
     `⏳ LOADING: ${percent}% - ${message}`
@@ -180,13 +174,6 @@ client.on("loading_screen", (percent, message) => {
 client.on("message", (message) => {
   console.log("🔥🔥 MESSAGE MASUK");
   console.log("FROM:", message.from);
-  console.log("BODY:", message.body);
-});
-
-client.on("message_create", (message) => {
-  console.log("🟡 MESSAGE_CREATE");
-  console.log("FROM:", message.from);
-  console.log("FROM ME:", message.fromMe);
   console.log("BODY:", message.body);
 });
 
