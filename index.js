@@ -148,11 +148,14 @@ console.log(
 // RAILWAY PERSISTENT DATA
 // ==================================================
 
-// Railway Volume akan memberikan path melalui
-// RAILWAY_VOLUME_MOUNT_PATH.
-//
-// Jika dijalankan lokal dan variable tidak ada,
-// gunakan folder ./data sebagai fallback.
+console.log(
+  "📦 VOLUME MOUNT:",
+  process.env.RAILWAY_VOLUME_MOUNT_PATH
+);
+
+const DATA_DIR =
+  process.env.RAILWAY_VOLUME_MOUNT_PATH ||
+  path.join(process.cwd(), "data");
 
 console.log("======================================");
 console.log("💾 DATA STORAGE");
@@ -187,6 +190,20 @@ try {
 
   process.exit(1);
 }
+
+// ==================================================
+// WHATSAPP AUTH SESSION
+// ==================================================
+
+const AUTH_DIR = path.join(
+  DATA_DIR,
+  ".wwebjs_auth"
+);
+
+console.log(
+  "🔐 AUTH DIR:",
+  AUTH_DIR
+);
 
 // ==================================================
 // WHATSAPP AUTH SESSION
