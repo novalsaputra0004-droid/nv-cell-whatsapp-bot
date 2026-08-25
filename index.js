@@ -152,24 +152,157 @@ console.log(
 console.log("📦 VOLUME MOUNT:", process.env.RAILWAY_VOLUME_MOUNT_PATH);
 
 const client = new Client({
-  authStrategy: new LocalAuth({
-    dataPath: "/app/data/.wwebjs_auth",
-    clientId: "nv-cell"
-  }),
-
-  puppeteer: {
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage"
-    ]
-  }
+    authStrategy: new LocalAuth({
+        clientId: "nv-cell",
+        dataPath: "/app/data/.wwebjs_auth"
+    }),
+    puppeteer: {
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage"
+        ]
+    }
 });
+
+
+// ============================================================
+// 📢 BROADCAST NV CELL
+// ============================================================
+
+const BROADCAST_ENABLED =
+    process.env.BROADCAST_ENABLED === "true";
+
+const BROADCAST_NUMBERS = [
+    "6285199005134",
+    "6283124537326",
+    "6285769502643",
+    "6285384842376",
+    "6285764586177",
+    "6289633493350",
+    "6283863133025",
+    "6281373896662",
+    "62895627113860",
+    "6285185697791",
+    "6281213099409",
+    "6285764640839",
+    "6285279209419",
+    "6282269937117",
+    "6282184167636",
+    "6285655524859",
+    "6288286648624",
+    "6289658023937",
+    "6281274371248",
+    "6281272484640",
+    "6283184267947",
+    "6289527117179",
+    "6282310372250"
+];
+
+const BROADCAST_MESSAGE = `🔥 PULSA & PAKET INTERNET MURAH DI NV CELL 🔥
+
+Halo kak 👋
+
+Sekarang beli pulsa dan paket internet jadi lebih gampang di NV CELL! 🚀
+
+📱 Tersedia pulsa & paket internet semua provider
+💰 PULSA BAYAR SESUAI NOMINAL
+⚡ Proses cepat dan praktis
+🎁 Ada sistem POIN & KODE REDEEM untuk mendapatkan potongan harga
+
+Contoh:
+💸 Pulsa 10.000 → bayar Rp10.000
+💸 Pulsa 20.000 → bayar Rp20.000
+💸 Pulsa 50.000 → bayar Rp50.000
+
+🌐 BELI SEKARANG:
+https://nvcelll.vercel.app/
+
+🎁 Mau dapat kode redeem?
+Daftar dulu melalui bot WhatsApp NV CELL, kumpulkan poin dari transaksi, lalu tukarkan poin menjadi kode redeem untuk mendapatkan DISKON! 🔥
+
+Yuk langsung coba NV CELL sekarang! 🚀`;
 client.on("loading_screen", (percent, message) => {
   console.log(
     `⏳ LOADING: ${percent}% - ${message}`
   );
 });
+let broadcastRunning = false;
+
+async function runBroadcast() {
+    if (!BROADCAST_ENABLED) {
+        console.log("📢 Broadcast tidak aktif.");
+        return;
+    }
+
+    if (broadcastRunning) {
+        console.log("⚠️ Broadcast sedang berjalan.");
+        return;
+    }
+
+    broadcastRunning = true;
+
+    console.log("");
+    console.log("======================================");
+    console.log("📢 MEMULAI BROADCAST NV CELL");
+    console.log(`📱 Jumlah nomor: ${BROADCAST_NUMBERS.length}`);
+    console.log("======================================");
+
+    let berhasil = 0;
+    let gagal = 0;
+
+    for (let i = 0; i < BROADCAST_NUMBERS.length; i++) {
+        const nomor = BROADCAST_NUMBERS[i];
+
+        try {
+            const chatId = nomor + "@c.us";
+
+            console.log(
+                `📨 [${i + 1}/${BROADCAST_NUMBERS.length}] ${nomor}`
+            );
+
+            const isRegistered =
+                await client.isRegisteredUser(chatId);
+
+            if (!isRegistered) {
+                console.log(`⚠️ ${nomor} tidak terdaftar WhatsApp`);
+                gagal++;
+                continue;
+            }
+
+            await client.sendMessage(
+                chatId,
+                BROADCAST_MESSAGE
+            );
+
+            berhasil++;
+
+            console.log(`✅ Terkirim: ${nomor}`);
+
+        } catch (error) {
+            gagal++;
+
+            console.log(`❌ Gagal: ${nomor}`);
+            console.log(error.message);
+        }
+
+        // Jeda 5 detik
+        if (i < BROADCAST_NUMBERS.length - 1) {
+            await new Promise(resolve =>
+                setTimeout(resolve, 5000)
+            );
+        }
+    }
+
+    console.log("");
+    console.log("======================================");
+    console.log("🏁 BROADCAST SELESAI");
+    console.log(`✅ Berhasil : ${berhasil}`);
+    console.log(`❌ Gagal    : ${gagal}`);
+    console.log("======================================");
+
+    broadcastRunning = false;
+}
 
 client.on("message", (message) => {
   console.log("🔥🔥 MESSAGE MASUK");
@@ -896,6 +1029,19 @@ client.on("ready", () => {
     10 * 1000
   );
 }
+});
+  // ==================================================
+  // 📢 BROADCAST NV CELL
+  // ==================================================
+
+  if (BROADCAST_ENABLED) {
+    console.log("📢 BROADCAST AKTIF");
+    console.log("⏳ Broadcast dimulai dalam 10 detik...");
+
+    setTimeout(() => {
+      runBroadcast();
+    }, 10000);
+  }
 });
 // ==================================================
 // DISCONNECTED
