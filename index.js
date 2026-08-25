@@ -198,6 +198,23 @@ client.on("ready", async () => {
       platform: client.info?.platform
     });
 
+    // 🔍 TEST GET CHATS
+    try {
+      const chats = await client.getChats();
+
+      console.log("📚 JUMLAH CHAT:", chats.length);
+
+      if (chats.length > 0) {
+        console.log("💬 CHAT PERTAMA:", {
+          name: chats[0].name,
+          id: chats[0].id?._serialized,
+          unreadCount: chats[0].unreadCount
+        });
+      }
+    } catch (error) {
+      console.log("❌ GET CHATS ERROR:", error);
+    }
+
   } catch (error) {
     console.log(
       "❌ WA TEST ERROR:",
@@ -205,7 +222,7 @@ client.on("ready", async () => {
     );
   }
 });
-client.on("change_state", (state) => {
+  client.on("change_state", (state) => {
   console.log("📡 WHATSAPP STATE:", state);
 });
 
