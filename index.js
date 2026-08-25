@@ -196,16 +196,39 @@ client.on("change_state", (state) => {
   console.log("📡 WHATSAPP STATE:", state);
 });
 
-client.on("message_ack", (message, ack) => {
-  console.log("📨 MESSAGE ACK:", ack);
-});
-
 client.on("message_create", (message) => {
-  console.log("🚨🚨🚨 MESSAGE_CREATE EVENT");
+  console.log("🚨 MESSAGE_CREATE");
   console.log("FROM:", message.from);
   console.log("BODY:", message.body);
   console.log("FROM ME:", message.fromMe);
 });
+
+client.on("message", (message) => {
+  console.log("🚨 MESSAGE");
+  console.log("FROM:", message.from);
+  console.log("BODY:", message.body);
+});
+
+setTimeout(async () => {
+  try {
+    console.log("🔍 TESTING WHATSAPP STATE...");
+
+    const state = await client.getState();
+
+    console.log("📡 CURRENT STATE:", state);
+
+    const info = await client.info;
+
+    console.log("👤 WA INFO:", {
+      wid: info?.wid?._serialized,
+      pushname: info?.pushname,
+      platform: info?.platform
+    });
+
+  } catch (error) {
+    console.log("❌ WHATSAPP TEST ERROR:", error);
+  }
+}, 15000);
 client.on("disconnected", (reason) => {
     console.log("🔴 WHATSAPP DISCONNECTED:", reason);
 });
