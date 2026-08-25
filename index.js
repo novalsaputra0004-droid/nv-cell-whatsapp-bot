@@ -1015,28 +1015,34 @@ client.on("ready", () => {
     "🔄 Monitor transaksi aktif."
   );
 
- if (!transactionMonitorStarted) {
-  transactionMonitorStarted = true;
+  // ==================================================
+  // MONITOR TRANSAKSI
+  // ==================================================
 
-  console.log(
-    "🔄 Monitor transaksi dimulai."
-  );
+  if (!transactionMonitorStarted) {
+    transactionMonitorStarted = true;
 
-  checkCompletedTransactions();
+    console.log(
+      "🔄 Monitor transaksi dimulai."
+    );
 
-  setInterval(
-    checkCompletedTransactions,
-    10 * 1000
-  );
-}
-});
+    checkCompletedTransactions();
+
+    setInterval(
+      checkCompletedTransactions,
+      10 * 1000
+    );
+  }
+
   // ==================================================
   // 📢 BROADCAST NV CELL
   // ==================================================
 
   if (BROADCAST_ENABLED) {
     console.log("📢 BROADCAST AKTIF");
-    console.log("⏳ Broadcast dimulai dalam 10 detik...");
+    console.log(
+      "⏳ Broadcast dimulai dalam 10 detik..."
+    );
 
     setTimeout(() => {
       runBroadcast();
