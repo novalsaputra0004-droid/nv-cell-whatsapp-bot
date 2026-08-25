@@ -186,8 +186,6 @@ client.on("ready", async () => {
       await client.getWWebVersion()
     );
 
-    console.log("🔍 TESTING WA STATE...");
-
     const state = await client.getState();
 
     console.log("📡 CURRENT WA STATE:", state);
@@ -198,45 +196,8 @@ client.on("ready", async () => {
       platform: client.info?.platform
     });
 
-    // 🔍 TEST GET CHATS
-    try {
-      const chats = await client.getChats();
-
-      console.log("📚 JUMLAH CHAT:", chats.length);
-
-      if (chats.length > 0) {
-        console.log("💬 CHAT PERTAMA:", {
-          name: chats[0].name,
-          id: chats[0].id?._serialized,
-          unreadCount: chats[0].unreadCount
-        });
-      }
-    } catch (error) {
-      console.log("❌ GET CHATS ERROR:", error);
-    }
-console.log("🌐 BROWSER TEST...");
-
-try {
-  const pages = await client.pupPage.browser().pages();
-
-  console.log("📄 JUMLAH PAGE:", pages.length);
-
-  for (const page of pages) {
-    console.log("🔗 PAGE URL:", await page.url());
-  }
-
-  const version = await client.pupPage.browser().version();
-
-  console.log("🧭 BROWSER VERSION:", version);
-
-} catch (error) {
-  console.log("❌ BROWSER TEST ERROR:", error);
-}
   } catch (error) {
-    console.log(
-      "❌ WA TEST ERROR:",
-      error
-    );
+    console.log("❌ WA TEST ERROR:", error);
   }
 });
   client.on("change_state", (state) => {
