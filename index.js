@@ -185,10 +185,23 @@ client.on("ready", async () => {
       "🌐 WA WEB VERSION:",
       await client.getWWebVersion()
     );
+
+    console.log("🔍 TESTING WA STATE...");
+
+    const state = await client.getState();
+
+    console.log("📡 CURRENT WA STATE:", state);
+
+    console.log("👤 WA INFO:", {
+      wid: client.info?.wid?._serialized,
+      pushname: client.info?.pushname,
+      platform: client.info?.platform
+    });
+
   } catch (error) {
     console.log(
-      "❌ GET WA VERSION ERROR:",
-      error.message
+      "❌ WA TEST ERROR:",
+      error
     );
   }
 });
