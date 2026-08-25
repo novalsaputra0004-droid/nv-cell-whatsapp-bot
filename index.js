@@ -214,7 +214,24 @@ client.on("ready", async () => {
     } catch (error) {
       console.log("❌ GET CHATS ERROR:", error);
     }
+console.log("🌐 BROWSER TEST...");
 
+try {
+  const pages = await client.pupPage.browser().pages();
+
+  console.log("📄 JUMLAH PAGE:", pages.length);
+
+  for (const page of pages) {
+    console.log("🔗 PAGE URL:", await page.url());
+  }
+
+  const version = await client.pupPage.browser().version();
+
+  console.log("🧭 BROWSER VERSION:", version);
+
+} catch (error) {
+  console.log("❌ BROWSER TEST ERROR:", error);
+}
   } catch (error) {
     console.log(
       "❌ WA TEST ERROR:",
