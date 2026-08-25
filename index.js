@@ -179,7 +179,69 @@ client.on("message", (message) => {
 
 client.on("ready", async () => {
   console.log("🟢 CLIENT READY");
+// ==================================================
+// 🔧 DIRECT WHATSAPP MESSAGE DEBUG/PATCH
+// ==================================================
+try {
+  await client.pupPage.evaluate(() => {
+    if (window.__NV_CELL_MESSAGE_PATCH__) {
+      console.log("⚠️ NV CELL MESSAGE PATCH SUDAH AKTIF");
+      return;
+    }
 
+    const { Msg } = window.require("WAWebCollections");
+
+    if (!Msg || !Msg.on) {
+      console.log("❌ WAWebCollections.Msg TIDAK TERSEDIA");
+      return;
+    }
+
+    window.__NV_CELL_MESSAGE_PATCH__ = true;
+
+    Msg.on("change", (msg) => {
+      try {
+        console.log("🔥🔥🔥 DIRECT MSG CHANGE TERDETEKSI");
+
+        console.log(
+          "📨 MSG ID:",
+          msg?.id?._serialized ||
+          msg?.id?.$1 ||
+          "UNKNOWN"
+        );
+
+        console.log(
+          "👤 FROM:",
+          msg?.from ||
+          msg?.author ||
+          msg?.id?.remote ||
+          "UNKNOWN"
+        );
+
+        console.log(
+          "💬 BODY:",
+          msg?.body || ""
+        );
+
+      } catch (error) {
+        console.log(
+          "❌ DIRECT MSG ERROR:",
+          error?.message || error
+        );
+      }
+    });
+
+    console.log(
+      "✅ NV CELL DIRECT MESSAGE PATCH AKTIF"
+    );
+
+  });
+
+} catch (error) {
+  console.log(
+    "❌ DIRECT MESSAGE PATCH ERROR:",
+    error?.message || error
+  );
+}
   try {
     console.log(
       "🌐 WA WEB VERSION:",
