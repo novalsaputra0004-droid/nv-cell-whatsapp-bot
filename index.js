@@ -928,10 +928,17 @@ client.on("disconnected", (reason) => {
 // ==================================================
 // PESAN MASUK
 // ==================================================
-client.on("message", (message) => {
+client.on("message", async (message) => {
   console.log("🚨🚨🚨 TEST MESSAGE EVENT");
   console.log("FROM:", message.from);
   console.log("BODY:", message.body);
+});
+
+client.on("message_create", async (message) => {
+  console.log("🚨🚨🚨 MESSAGE_CREATE EVENT");
+  console.log("FROM:", message.from);
+  console.log("BODY:", message.body);
+  console.log("FROM ME:", message.fromMe);
 });
 client.on(
   "message",
